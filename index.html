@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>无限画布创意工作台</title>
+<link rel="stylesheet" href="styles/main.css">
+<link rel="stylesheet" href="styles/nodes.css">
+<link rel="stylesheet" href="styles/panels.css">
+</head>
+<body>
+<!-- 顶部工具栏 -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="12" fill="none" stroke="#7c6af7" stroke-width="2"/><path d="M8 14 L14 8 L20 14 L14 20 Z" fill="#7c6af7" opacity="0.6"/><circle cx="14" cy="14" r="3" fill="#7c6af7"/></svg>
+      <span>无限画布</span>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <div class="toolbar-group">
+      <button class="tool-btn active" data-tool="select" title="选择 (V)"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 2L8 14L10 9L15 7Z" fill="currentColor"/></svg></button>
+      <button class="tool-btn" data-tool="hand" title="平移 (H)"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 2v4M6 4V2M10 4V2M4 8v-2a2 2 0 014 0v0M4 8h8l-1 6H5z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="divider"></div>
+    <div class="zoom-ctrl">
+      <button id="zoomOut" title="缩小">−</button>
+      <span id="zoomLabel">100%</span>
+      <button id="zoomIn" title="放大">+</button>
+      <button id="zoomFit" title="适应屏幕">⊡</button>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span style="font-size:11px;color:#55556a;margin-right:4px;">空白处长按可拖动 · 滚轮缩放 · 空格键临时手型</span>
+    <button class="btn-secondary" id="toggleLibrary">素材库</button>
+    <button class="btn-primary" id="exportBtn">导出</button>
+  </div>
+</header>
+
+<!-- 左侧节点面板 -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-title">添加节点</div>
+    <div class="node-palette">
+      <div class="palette-item" data-type="text" draggable="true">
+        <div class="palette-icon">📝</div>
+        <span>文本节点</span>
+      </div>
+      <div class="palette-item" data-type="image" draggable="true">
+        <div class="palette-icon">🖼️</div>
+        <span>图片节点</span>
+      </div>
+      <div class="palette-item" data-type="video" draggable="true">
+        <div class="palette-icon">🎬</div>
+        <span>视频节点</span>
+      </div>
+      <div class="palette-item" data-type="pose" draggable="true">
+        <div class="palette-icon">🕺</div>
+        <span>姿势节点</span>
+      </div>
+      <div class="palette-item" data-type="gallery" draggable="true">
+        <div class="palette-icon">📷</div>
+        <span>图集节点</span>
+      </div>
+      <div class="palette-item" data-type="doodle" draggable="true">
+        <div class="palette-icon">✏️</div>
+        <span>涂鸦节点</span>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-title">快速操作</div>
+    <div class="quick-actions">
+      <button class="qa-btn" id="clearCanvas">清空画布</button>
+      <button class="qa-btn" id="saveCanvas">保存状态</button>
+      <button class="qa-btn" id="loadCanvas">载入状态</button>
+    </div>
+  </div>
+</aside>
+
+<!-- 主画布区域 -->
+<main class="canvas-wrapper" id="canvasWrapper">
+  <!-- SVG连线层 -->
+  <svg class="connections-layer" id="connectionsLayer">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#7c6af7" opacity="0.8"/>
+      </marker>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+        <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+  </svg>
+  <!-- 节点容器 -->
+  <div class="canvas-nodes" id="canvasNodes"></div>
+</main>
+
+<!-- 素材库面板 -->
+<div class="library-panel" id="libraryPanel">
+  <div class="panel-header">
+    <span>素材库</span>
+    <div class="panel-tabs">
+      <button class="tab-btn active" data-tab="all">全部</button>
+      <button class="tab-btn" data-tab="character">人物</button>
+      <button class="tab-btn" data-tab="scene">场景</button>
+      <button class="tab-btn" data-tab="prop">物品</button>
+      <button class="tab-btn" data-tab="style">风格</button>
+    </div>
+    <button class="panel-close" id="closeLibrary">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="library-upload-zone" id="libraryUploadZone">
+      <input type="file" id="libraryFileInput" accept="image/*,video/*" multiple style="display:none">
+      <div class="upload-hint" onclick="document.getElementById('libraryFileInput').click()">
+        <span>+ 点击或拖拽上传素材</span>
+      </div>
+    </div>
+    <div class="library-grid" id="libraryGrid"></div>
+  </div>
+</div>
+
+<!-- 右键菜单 -->
+<div class="context-menu" id="contextMenu">
+  <div class="ctx-group">
+    <div class="ctx-label">添加节点</div>
+    <div class="ctx-item" data-action="addText" data-shortcut="T">
+      <span class="ctx-icon">📝</span>文本节点
+      <span class="ctx-shortcut">T</span>
+    </div>
+    <div class="ctx-item" data-action="addImage" data-shortcut="I">
+      <span class="ctx-icon">🖼️</span>图片节点
+      <span class="ctx-shortcut">I</span>
+    </div>
+    <div class="ctx-item" data-action="addGallery" data-shortcut="G">
+      <span class="ctx-icon">📷</span>图集节点
+      <span class="ctx-shortcut">G</span>
+    </div>
+    <div class="ctx-item" data-action="addVideo" data-shortcut="V">
+      <span class="ctx-icon">🎬</span>视频节点
+      <span class="ctx-shortcut">V</span>
+    </div>
+    <div class="ctx-item" data-action="addPose" data-shortcut="P">
+      <span class="ctx-icon">🕺</span>姿势节点
+      <span class="ctx-shortcut">P</span>
+    </div>
+    <div class="ctx-item" data-action="addDoodle" data-shortcut="D">
+      <span class="ctx-icon">✏️</span>涂鸦节点
+      <span class="ctx-shortcut">D</span>
+    </div>
+  </div>
+  <div class="ctx-separator"></div>
+  <div class="ctx-group">
+    <div class="ctx-item" data-action="addMatrix" data-shortcut="M">
+      <span class="ctx-icon">👥</span>姿势矩阵
+      <span class="ctx-shortcut">M</span>
+    </div>
+    <div class="ctx-item" data-action="openLibrary">
+      <span class="ctx-icon">📦</span>打开素材库
+    </div>
+  </div>
+  <div class="ctx-separator"></div>
+  <div class="ctx-group">
+    <div class="ctx-item" data-action="fitView">
+      <span class="ctx-icon">⊡</span>适应视图
+    </div>
+    <div class="ctx-item" data-action="zoomReset">
+      <span class="ctx-icon">⟳</span>重置缩放
+    </div>
+  </div>
+  <div class="ctx-separator"></div>
+  <div class="ctx-group">
+    <div class="ctx-item" data-action="saveState">
+      <span class="ctx-icon">💾</span>保存画布
+    </div>
+    <div class="ctx-item danger" data-action="clearCanvas">
+      <span class="ctx-icon">🗑️</span>清空画布
+    </div>
+  </div>
+</div>
+
+<!-- Toast通知 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- 模态框容器 -->
+<div class="modal-overlay" id="modalOverlay" style="display:none">
+  <div class="modal-box" id="modalBox"></div>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/connections.js"></script>
+<script src="js/nodes/BaseNode.js"></script>
+<script src="js/nodes/TextNode.js"></script>
+<script src="js/nodes/ImageNode.js"></script>
+<script src="js/nodes/VideoNode.js"></script>
+<script src="js/nodes/PoseNode.js"></script>
+<script src="js/nodes/GalleryNode.js"></script>
+<script src="js/nodes/DoodleNode.js"></script>
+<script src="js/library.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+/* ============================================================
+   面板辅助样式（提示词预览、导出等）
+   ============================================================ */
+
+/* 加载动画 */
+.spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 标签 */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500;
+}
+.badge-accent { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); }
+.badge-success { background: rgba(74,222,128,0.1); color: var(--success); border: 1px solid var(--success); }
+.badge-warning { background: rgba(251,191,36,0.1); color: var(--warning); border: 1px solid var(--warning); }
+.badge-danger  { background: rgba(248,113,113,0.1); color: var(--danger);  border: 1px solid var(--danger); }
+
+/* 分割线 */
+.hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+/* 图标按钮 */
+.icon-btn {
+  width: 28px; height: 28px; border: 1px solid var(--border); border-radius: var(--radius-xs);
+  background: var(--bg-secondary); color: var(--text-secondary);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: var(--transition); font-size: 13px;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* 进度条 */
+.progress-bar {
+  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 6px 0;
+}
+.progress-fill {
+  height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s ease;
+}
+
+/* 提示文本 */
+.hint-text { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+.hint-text a { color: var(--accent); text-decoration: none; }
+.hint-text a:hover { text-decoration: underline; }
+
+/* 折叠区块 */
+.collapsible { overflow: hidden; transition: max-height 0.3s ease; }
+.collapsible.collapsed { max-height: 0 !important; }
+
+/* 节点状态指示 */
+.node-status {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--text-muted); margin-top: 8px;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.status-dot.idle    { background: var(--text-muted); }
+.status-dot.loading { background: var(--warning); animation: pulse 1s ease infinite; }
+.status-dot.done    { background: var(--success); }
+.status-dot.error   { background: var(--danger); }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* 拖放目标高亮 */
+.drop-target {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9997;
+  background: rgba(124,106,247,0.08);
+  border: 3px dashed var(--accent);
+  border-radius: 0; display: none;
+}
+.drop-target.active { display: block; }
+
+/* 下载提示弹窗 */
+.download-hint {
+  text-align: center; padding: 16px 0;
+}
+.download-hint .icon { font-size: 48px; margin-bottom: 12px; }
+.download-hint .title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.download-hint .desc  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.download-hint .note  { font-size: 11px; color: var(--text-muted); margin-top: 12px; padding: 8px; background: var(--bg-secondary); border-radius: 6px; }
